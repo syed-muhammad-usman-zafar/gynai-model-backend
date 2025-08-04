@@ -37,6 +37,8 @@ class PredictionResponse(BaseModel):
     recommendations: List[str]
 
 class ModelInfo(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
+    
     model_name: str
     version: str
     accuracy: float
@@ -45,6 +47,8 @@ class ModelInfo(BaseModel):
     target_classes: List[str]
 
 class HealthResponse(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
+    
     status: str
     model_loaded: bool
     timestamp: str

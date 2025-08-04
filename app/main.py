@@ -7,11 +7,11 @@ import os
 from datetime import datetime
 import logging
 
-# Configure logging
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Initialize FastAPI app
+
 app = FastAPI(
     title="GynAI Delivery Mode Prediction API",
     description="Clinical decision support system for predicting childbirth delivery modes",
@@ -23,17 +23,16 @@ app = FastAPI(
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately for production
+    allow_origins=["*"],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Initialize the ML model
 predictor = DeliveryModePredictor()
 model_loaded = False
 
-# Load model on startup
+
 @app.on_event("startup")
 async def load_model():
     global model_loaded
@@ -51,7 +50,6 @@ async def load_model():
 
 @app.get("/", tags=["Root"])
 async def root():
-    """Root endpoint with API information"""
     return {
         "message": "GynAI Delivery Mode Prediction API",
         "version": "1.0.0",
@@ -61,7 +59,6 @@ async def root():
 
 @app.get("/health", response_model=HealthResponse, tags=["Health"])
 async def health_check():
-    """Health check endpoint"""
     return HealthResponse(
         status="healthy",
         model_loaded=model_loaded,
@@ -77,7 +74,6 @@ async def predict_delivery_mode(patient_data: PatientInput):
         )
     
     try:
-        # Convert Pydantic model to dict - using uppercase field names
         patient_dict = {
             "Mother_Age": patient_data.Mother_Age,
             "Gravida": patient_data.Gravida,
@@ -86,10 +82,7 @@ async def predict_delivery_mode(patient_data: PatientInput):
             "Previous_CS": patient_data.Previous_CS
         }
         
-        # Make prediction
         result = predictor.predict(patient_dict)
-        
-        # Log prediction for monitoring
         logger.info(f"Prediction made: {result['predicted_delivery_type']} with confidence {result['confidence_score']:.3f}")
         
         return PredictionResponse(**result)
@@ -103,7 +96,6 @@ async def predict_delivery_mode(patient_data: PatientInput):
 
 @app.get("/model/info", response_model=ModelInfo, tags=["Model"])
 async def get_model_info():
-    """Get information about the loaded model"""
     if not model_loaded:
         raise HTTPException(
             status_code=503,
@@ -122,10 +114,7 @@ async def get_model_info():
 
 @app.post("/model/train", tags=["Admin"])
 async def train_model():
-    """
-    Train a new model (Admin endpoint)
-    This endpoint should be protected in production
-    """
+#ye wala endpoint production mein secure krna this is for Admin
     try:
         global model_loaded
         
@@ -159,7 +148,6 @@ async def train_model():
 
 @app.get("/model/feature-importance", tags=["Model"])
 async def get_feature_importance():
-    """Get feature importance from the loaded model"""
     if not model_loaded:
         raise HTTPException(
             status_code=503,
@@ -173,8 +161,6 @@ async def get_feature_importance():
                 status_code=404,
                 detail="Feature importance not available for this model"
             )
-        
-        # Sort by importance
         sorted_features = sorted(
             feature_importance.items(),
             key=lambda x: x[1],
